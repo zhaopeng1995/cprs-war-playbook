@@ -1,0 +1,55 @@
+### basic service
+[nfs-server]
+10.9.49.10 ansible_connection=local
+[nfs-client]
+10.9.49.[21:37]
+[nfs:children]
+nfs-client
+nfs-server
+[nginx]
+10.9.49.[29:30]
+[redis]
+10.9.49.30
+[samba]
+10.9.49.10 ansible_connection=local
+[oracle]
+10.9.49.1
+10.9.49.2
+[mysql]
+10.9.49.51
+10.9.49.52
+[db:children]
+mysql
+oracle
+### end of basic service
+
+[local]
+10.9.49.10 ansible_connection=local
+[cprs]
+10.9.49.[21:37]
+[emall]
+10.9.49.[38:40]
+
+[uc-webapp]
+10.9.49.[27:28]
+[ucadmin]
+10.9.49.29
+[uc-as]
+10.9.49.[25:26]
+
+[hps-webapp]
+10.9.49.[27:28]
+
+[hps-bankgate]
+10.9.49.31
+[hps-admin]
+10.9.49.26
+
+[rpt-admin]
+10.9.49.[32:33]
+[rpt-web]
+10.9.49.[32:33]
+[rpt-as]
+10.9.49.32
+[rpt-job]
+10.9.49.32

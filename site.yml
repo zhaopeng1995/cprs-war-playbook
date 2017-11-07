@@ -1,0 +1,16 @@
+---
+- hosts: cprs
+  remote_user: root
+  become: yes
+  become_method: sudo
+
+  roles:
+    - common
+
+- hosts: redis
+  remote_user: root
+  become: yes
+  become_method: sudo
+
+  roles:
+    - redis
