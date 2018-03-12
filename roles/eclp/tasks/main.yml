@@ -1,0 +1,11 @@
+---
+ - name: 创建目录
+   file: path=/home/cprs/{{item}} owner=cprs state=directory
+   with_items:  ['tomcats','deploy','logs']
+
+ - name: 上传安装脚本
+   shell: "echo $USER"
+
+ - name: 上传安装脚本
+   debug:  
+     var: hostvars[inventory_hostname]

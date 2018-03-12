@@ -13,7 +13,7 @@
 #     4. the root'passworwd of all the machines must be same          #
 # ##########################################################233########
 
-# install epel
+
 function info(){
     echo -e "\033[32m[ $1 ]\033[0m"
 }
@@ -22,52 +22,62 @@ function error(){
 }
 
 if  [[ $USER != 'root' ]]  ;then
-       error "current user is not root,run this script from the root of repository"
+       error "当前用户不是root,请以root用户执行脚本"
        exit 1
 fi
 
-# yum install ansible
+# yum install epel and ansible 
 yum -y install epel-release 
 yum  -y install ansible expect
-[[  `which ansible` ]] &&  info "ansible has been installed  successfully" || error "install ansible failed"
+[[  `which ansible` ]] &&  info "ansible 安装成功" || error "ansible 安装失败"
 
 # generate sshkey
-[ ! `which ssh` ] && yum install -y openssh-clients
-[ ! -f $HOME/.ssh/id_rsa ] && info "ssh key not exsits, start generating..." && ssh-keygen
+is_batch_ssh_key="no"
+read -p "是否分发ssh秘钥?(yes/no):" is_batch_ssh_key
 
-# batch ssh_key
-info " batching the ssh key..."
-read -s -p "Please input the root's password : "  password
-echo ""
-read -s -p "Confirm your passowrd : "  password_2
-echo ""
-[[ -z $password ]] && [ -z $password_2 ] && error "empty input"  && exit 3
-[[  $password != $password_2 ]] && error " password not consistent!" && exit 3
-read -p "Input the host file (./ip_list.txt):" hostfile
-[ -z $hostfile ] &&  hostfile="./ip_list.txt"
-[[ ! -f $hostfile ]] && error "file $hostfile not exits !it looks like below:\n \
-192.168.100.101\n 192.168.100.102
-"  && exit 3
-read -p "Input the path of public key ($HOME/.ssh/id_rsa.pub)" key_file 
-[ -z $key_file ] &&  key_file="$HOME/.ssh/id_rsa.pub"
-[[ ! -f $key_file ]] && error "keyfile $key_file not exits !"  && exit 3
-echo " host file:"  $hostfile
-echo " key file :" $key_file 
-info "start batch_ssh_key ....."
-user=root
-for ip in $(cat $hostfile)
-do   
-    expect -c "
-        set timeout 15
-	spawn ssh-copy-id -i $key_file $user@$ip
-	expect {
-        \"*yes/no*\" {send \"yes\r\"; exp_continue}
-        \"*password*\" {send \"$password\r\"; exp_continue}
-        \"*Password*\" {send \"$password\r\";}
-    }
-" 
-    
-done
-info "done"
+case $is_batch_ssh_key  in
+	yes )
+		[ ! `which ssh` ] && yum install -y openssh-clients
+		[ ! -f $HOME/.ssh/id_rsa ] && info "ssh key not exsits, start generating..." && ssh-keygen
+
+		# batch ssh_key
+		info " batching the ssh key..."
+		read -s -p "Please input the root's password : "  password
+		echo ""
+		read -s -p "Confirm your passowrd : "  password_2
+		echo ""
+		[[ -z $password ]] && [ -z $password_2 ] && error "empty input"  && exit 3
+		[[  $password != $password_2 ]] && error " password not consistent!" && exit 3
+		read -p "Input the host file (./ip_list.txt):" hostfile
+		[ -z $hostfile ] &&  hostfile="./ip_list.txt"
+		[[ ! -f $hostfile ]] && error "file $hostfile not exits !it looks like below:\n \
+		192.168.100.101\n 192.168.100.102
+		"  && exit 3
+		read -p "Input the path of public key ($HOME/.ssh/id_rsa.pub)" key_file 
+		[ -z $key_file ] &&  key_file="$HOME/.ssh/id_rsa.pub"
+		[[ ! -f $key_file ]] && error "keyfile $key_file not exits !"  && exit 3
+		echo " host file:"  $hostfile
+		echo " key file :" $key_file 
+		info "start batch_ssh_key ....."
+		user=root
+		for ip in $(cat $hostfile)
+		do   
+			expect -c "
+			set timeout 15
+			spawn ssh-copy-id -i $key_file $user@$ip
+			expect {
+			\"*yes/no*\" {send \"yes\r\"; exp_continue}
+			\"*password*\" {send \"$password\r\"; exp_continue}
+			\"*Password*\" {send \"$password\r\";}
+			}
+			" 
+		done
+		info "batch ssh key done"
+	;;
+	no )
+		info "select  no , passing"  && exit 0
+	;;
+esac  
+
 
 
