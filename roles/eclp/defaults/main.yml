@@ -5,3 +5,4 @@ tomcat_tarfile_path:
 root_dir: /home/emall
 users:
   - { name: test1, uid: 511, passwd: test1}
+  
